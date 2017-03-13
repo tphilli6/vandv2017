@@ -32,14 +32,17 @@ r=[1.000, 1.143, 1.333, 1.6, 2.0, 2.286, 2.667, 3.2, 4.0];%, 5.333, 8.0];
 % Value is the index corresponding to the appropriate mesh size in r
 Uest=[1,5,9
       5,7,9];
-%       5,9,11];
+
+UestGlobal=[1,2,3
+            5,6,7];
 
 
 
 
 nC=1; nSC=1; ns=1;
 [~,~,~] = mkdir('Results');
-for nC = 2:numel(Cases)
+for nC = 1:numel(Cases)
+    
    for nSC = 1:numel(subCases) 
        fprintf(['Processing: ',folder1,Cases{nC},subCases{nSC}]);
        
@@ -60,7 +63,7 @@ for nC = 2:numel(Cases)
             fprintf('.');
             folder=[folder1,Cases{nC},subCases{nSC},'/set',sets{ns}];
 
-            processSetUncertainty(folder, pf, r, Uest, fid, 2);
+            processSetUncertainty(folder, pf, r, Uest, UestGlobal, fid, 2);
        
          
             fprintf(fid,'|---------------------------------------------------------------------------------------------------------|\n');

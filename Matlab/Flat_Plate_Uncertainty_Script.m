@@ -36,7 +36,11 @@ Uest=[1,5,9
       5,9,13
       9,11,13];
 
+UestGlobal=[1,3,5
+            5,7,9
+            9,11,13];
 
+UestGlobal=Uest;
 
 
 
@@ -51,7 +55,7 @@ for nC = 1:numel(Cases)
        fprintf(fid, ['Summary of Uncertainty Estimate Reliability for Flat Plate ',CaseNames{nC},', ',subCaseNames{nSC},'\n\n']);
        
        for ns = 1:numel(sets)
-            fprintf(fid,['Reliability of uncertainty estimates: ',folder,'\n']);
+            fprintf(fid,['Reliability of uncertainty estimates: Case',Cases{nC},subCases{nSC},'/set',num2str(ns),'\n']);
             fprintf(fid,'|---------------------------------------------------------------------|\n');
             fprintf(fid,'|         |                             p*                            |\n');
             fprintf(fid,'|---------------------------------------------------------------------|\n');
@@ -63,11 +67,10 @@ for nC = 1:numel(Cases)
             fprintf('.');
             folder=[folder1,Cases{nC},subCases{nSC},'/set',sets{ns}];
 
-            processSetUncertainty(folder, pf, r, Uest, fid, 1);
+            processSetUncertainty(folder, pf, r, Uest, UestGlobal, fid, 1);
 
             fprintf(fid,'|---------------------------------------------------------------------|\n\n\n');
 
-         
        end
        
        fclose(fid);

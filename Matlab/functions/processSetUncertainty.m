@@ -1,5 +1,6 @@
-function processSetUncertainty(folder, pf, r, Uest, fid, application)
+function processSetUncertainty(folder, pf, r, Uest, UestGlobal, fid, application, plotOn)
 
+if (nargin<8); plotOn=0; end
 
 rstr=num2str(r,'%5.3f'); 
 rstr=reshape(rstr,[5,numel(r)])';
@@ -22,42 +23,91 @@ elseif application==2 % NACA 0012
     datacpup=flipud(importdata(['Data/',folder,'/conv_surface_cpup.dat']))'; sf_cpup=datacpup(2:end,:);    
 end
 
-% Since this is computed using an incompressible code, I need pressure for
-% Cd estimation so
 
 
-% Spot check data, plots grid size versus data for a given mesh node
-% for i=1:size(x,1)
-%    subplot(3,2,1)
-%    semilogx(r,u(i,:),'k-o') 
-%    subplot(3,2,2)
-%    semilogx(r(1:end-2),(u(i,3:end)-u(i,2:end-1))./(u(i,2:end-1)-u(i,1:end-2)),'k-o') 
-%    
-%    subplot(3,2,3)
-%    semilogx(r,v(i,:),'k-o') 
-%    subplot(3,2,4)
-%    semilogx(r(1:end-2),(v(i,3:end)-v(i,2:end-1))./(v(i,2:end-1)-v(i,1:end-2)),'k-o') 
-%    
-%    subplot(3,2,5)
-%    semilogx(r,nu(i,:),'k-o') 
-%    subplot(3,2,6)
-%    semilogx(r(1:end-2),(nu(i,3:end)-nu(i,2:end-1))./(nu(i,2:end-1)-nu(i,1:end-2)),'k-o') 
-% end
+% Check data visually
+if plotOn
+    % u (local)
+    pp=u;
+    for ii=1:size(pp,1); semilogx(r,pp(ii,:)/pp(ii,1),'ko-'); hold on; end; hold off;
+    title('u')
+    pause
 
+    % v (local)
+    pp=v;
+    for ii=1:size(pp,1); semilogx(r,pp(ii,:)/pp(ii,1),'ko-'); hold on; end; hold off;
+    title('u')
+    pause
+
+    % nu (local)
+    pp=nu;
+    for ii=1:size(pp,1); semilogx(r,pp(ii,:)/pp(ii,1),'ko-'); hold on; end; hold off;
+    title('nu')
+    pause
+
+    % Coefficient of drag (global)
+    pp=cd;
+    for ii=1:size(pp,1); semilogx(r,pp(ii,:)/pp(ii,1),'ko-'); hold on; end; hold off;
+    title('Cd')
+    pause
+
+
+    if application==1;
+
+        % plot normalized data
+        pp=sf;
+        for ii=1:size(pp,1); semilogx(r,pp(ii,:)/pp(ii,1),'ko-'); hold on; end; hold off;
+        title('Cf')
+        pause
+
+    elseif application==2;
+
+        pp=sf_cflo;
+        for ii=1:size(pp,1); semilogx(r,pp(ii,:)/pp(ii,1),'ko-'); hold on; end; hold off;
+        title('Cf lower')
+        pause
+
+        pp=sf_cflo;
+        for ii=1:size(pp,1); semilogx(r,pp(ii,:)/pp(ii,1),'ko-'); hold on; end; hold off;
+        title('Cf upper')
+        pause
+
+        pp=sf_cflo;
+        for ii=1:size(pp,1); semilogx(r,pp(ii,:)/pp(ii,1),'ko-'); hold on; end; hold off;
+        title('Cp lower')
+        pause
+
+        pp=sf_cflo;
+        for ii=1:size(pp,1); semilogx(r,pp(ii,:)/pp(ii,1),'ko-'); hold on; end; hold off;
+        title('Cp upper')
+        pause
+
+
+    end
+
+end
 
 
 
 for i = 1:size(Uest,1);
     f=Uest(i,:);
+    fg=UestGlobal(i,:);
+    
     [uUncert(:,1),pstarU]   = globalDeviationUncertainty(u(:,f(1)),u(:,f(2)),u(:,f(3)),r(f(2))/r(f(1)),r(f(3))/r(f(2)),pf);
     [vUncert(:,1),pstarV]   = globalDeviationUncertainty(v(:,f(1)),v(:,f(2)),v(:,f(3)),r(f(2))/r(f(1)),r(f(3))/r(f(2)),pf);
     [nuUncert(:,1),pstarNu] = globalDeviationUncertainty(nu(:,f(1)),nu(:,f(2)),nu(:,f(3)),r(f(2))/r(f(1)),r(f(3))/r(f(2)),pf);
-    [cdUncert1(:,i),pstarCD1] = globalDeviationUncertainty(cd(:,f(1)),cd(:,f(2)),cd(:,f(3)),r(f(2))/r(f(1)),r(f(3))/r(f(2)),pf);
+     
+    % Choose which uncertainty estimators you want to use for the global
+    % uncertainty estimate
+%     [cdUncert1(:,i),pstarCD1] = globalDeviationUncertainty(cd(:,fg(1)),cd(:,fg(2)),cd(:,fg(3)),r(fg(2))/r(fg(1)),r(fg(3))/r(fg(2)),pf);
+    [cdUncert1(:,i),pstarCD1] = orUncertainty(cd(:,fg(1)),cd(:,fg(2)),cd(:,fg(3)),r(fg(2))/r(fg(1)),r(fg(3))/r(fg(2)),pf);
+
     
     if application==1;
         [sfUncert(:,i),pstarSF] = globalDeviationUncertainty(sf(:,f(1)),sf(:,f(2)),sf(:,f(3)),r(f(2))/r(f(1)),r(f(3))/r(f(2)),pf);
+        
         fprintf(fid,'|   %2.0f    |    %4.2f   |    %4.2f   |    %4.2f   |    %4.2f   |    %4.2f   |\n', r(f(1)), pstarU, pstarV, pstarNu, pstarCD1, pstarSF );
-    
+
     elseif application==2;
         [sf_cfloUncert(:,i),pstarSF_cflo] = globalDeviationUncertainty(sf_cflo(:,f(1)),sf_cflo(:,f(2)),sf_cflo(:,f(3)),r(f(2))/r(f(1)),r(f(3))/r(f(2)),pf);
         [sf_cfupUncert(:,i),pstarSF_cfup] = globalDeviationUncertainty(sf_cfup(:,f(1)),sf_cfup(:,f(2)),sf_cfup(:,f(3)),r(f(2))/r(f(1)),r(f(3))/r(f(2)),pf);
@@ -65,10 +115,9 @@ for i = 1:size(Uest,1);
         [sf_cpupUncert(:,i),pstarSF_cpup] = globalDeviationUncertainty(sf_cpup(:,f(1)),sf_cpup(:,f(2)),sf_cpup(:,f(3)),r(f(2))/r(f(1)),r(f(3))/r(f(2)),pf);
 
         fprintf(fid,'|   %2.0f    |    %4.2f   |    %4.2f   |    %4.2f   |    %4.2f   |    %4.2f   |    %4.2f   |    %4.2f   |    %4.2f   |\n', r(f(1)), pstarU, pstarV, pstarNu, pstarCD1, pstarSF_cflo, pstarSF_cfup, pstarSF_cplo, pstarSF_cpup );
-    
+
     end
     
-
     writeResults(['Results/',folder,'/field_points_r',rstr(f(1),:),'.dat'], x, y, uUncert, vUncert, nuUncert, rstr(f(1),:) );
 end
 
