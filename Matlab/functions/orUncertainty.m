@@ -8,17 +8,17 @@ pmean=mean(p); %mean of order of accuracy, includes oscillatory and divergent ca
 for i = 1:numel(p)
     if p==-1
         fprintf('Entry %4.0f is divergent\n',i);
-        FS=0;
-        pU=1;
+        FS=3;
+        pU=0.5;
         
     elseif p==0
         fprintf('Entry %4.0f is oscillatory\n',i);
-        FS=0;
-        pU=1;
-        
-    elseif p/pformal < 0.9
         FS=3;
-        pU=p;
+        pU=0.5;
+        
+    elseif abs(p-pformal)/pformal > 0.1
+        FS=3;
+        pU=min( max(0.5, p), pf );
         
     else
         FS=1.25;
