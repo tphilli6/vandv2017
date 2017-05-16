@@ -1,4 +1,4 @@
-function processSetUncertainty(folder, pf, r, Uest, UestGlobal, fid, application, plotOn)
+function processSetUncertainty(folder, pf, r, Uest, UestGlobal, fid, application, plotOn, caselbl, setlbl)
 
 if (nargin<8); plotOn=0; end
 
@@ -23,7 +23,10 @@ elseif application==2 % NACA 0012
     datacpup=flipud(importdata(['Data/',folder,'/conv_surface_cpup.dat']))'; sf_cpup=datacpup(2:end,:);    
 end
 
-
+% Setup description output
+file = ['Results/',folder,'/description','_CASE',caselbl,'_set',setlbl,'.txt'];
+fid_description = fopen(file,'w');
+fprintf(fid_description,'pf = %3.1f\n\n',pf);
 
 % Check data visually
 if plotOn
@@ -97,14 +100,19 @@ for i = 1:size(Uest,1);
     [vUncert(:,1),pstarV]   = globalDeviationUncertainty(v(:,f(1)),v(:,f(2)),v(:,f(3)),r(f(2))/r(f(1)),r(f(3))/r(f(2)),pf);
     [nuUncert(:,1),pstarNu] = globalDeviationUncertainty(nu(:,f(1)),nu(:,f(2)),nu(:,f(3)),r(f(2))/r(f(1)),r(f(3))/r(f(2)),pf);
      
+     write_description(fid_description, folder, caselbl, setlbl, '1', f, 'field_points', rstr, pf)
+     
+     
     % Choose which uncertainty estimators you want to use for the global
     % uncertainty estimate
 %     [cdUncert1(:,i),pstarCD1] = globalDeviationUncertainty(cd(:,fg(1)),cd(:,fg(2)),cd(:,fg(3)),r(fg(2))/r(fg(1)),r(fg(3))/r(fg(2)),pf);
     [cdUncert1(:,i),pstarCD1] = orUncertainty(cd(:,fg(1)),cd(:,fg(2)),cd(:,fg(3)),r(fg(2))/r(fg(1)),r(fg(3))/r(fg(2)),pf);
-
+     write_description(fid_description, folder, caselbl, setlbl, '2', f, 'cd', rstr, pf)
     
     if application==1;
         [sfUncert(:,i),pstarSF] = globalDeviationUncertainty(sf(:,f(1)),sf(:,f(2)),sf(:,f(3)),r(f(2))/r(f(1)),r(f(3))/r(f(2)),pf);
+        
+        write_description(fid_description, folder, caselbl, setlbl, '1', f, 'surface', rstr, pf)
         
         fprintf(fid,'|   %2.0f    |    %4.2f   |    %4.2f   |    %4.2f   |    %4.2f   |    %4.2f   |\n', r(f(1)), pstarU, pstarV, pstarNu, pstarCD1, pstarSF );
 
@@ -114,22 +122,38 @@ for i = 1:size(Uest,1);
         [sf_cploUncert(:,i),pstarSF_cplo] = globalDeviationUncertainty(sf_cplo(:,f(1)),sf_cplo(:,f(2)),sf_cplo(:,f(3)),r(f(2))/r(f(1)),r(f(3))/r(f(2)),pf);
         [sf_cpupUncert(:,i),pstarSF_cpup] = globalDeviationUncertainty(sf_cpup(:,f(1)),sf_cpup(:,f(2)),sf_cpup(:,f(3)),r(f(2))/r(f(1)),r(f(3))/r(f(2)),pf);
 
+        write_description(fid_description, folder, caselbl, setlbl, '1', f, 'surface_cflo', rstr, pf)
+        write_description(fid_description, folder, caselbl, setlbl, '1', f, 'surface_cfup', rstr, pf)
+        write_description(fid_description, folder, caselbl, setlbl, '1', f, 'surface_cplo', rstr, pf)
+        write_description(fid_description, folder, caselbl, setlbl, '1', f, 'surface_cpup', rstr, pf)
+        
         fprintf(fid,'|   %2.0f    |    %4.2f   |    %4.2f   |    %4.2f   |    %4.2f   |    %4.2f   |    %4.2f   |    %4.2f   |    %4.2f   |\n', r(f(1)), pstarU, pstarV, pstarNu, pstarCD1, pstarSF_cflo, pstarSF_cfup, pstarSF_cplo, pstarSF_cpup );
 
     end
     
-    writeResults(['Results/',folder,'/field_points_r',rstr(f(1),:),'.dat'], x, y, uUncert, vUncert, nuUncert, rstr(f(1),:) );
+    writeResults(['Results/',folder,'/field_points_r',rstr(f(1),:),'_CASE',caselbl,'_set',setlbl,'.dat'], x, y, uUncert, vUncert, nuUncert, rstr(f(1),:) );
+    
+    fprintf(fid_description,'\n');
+
 end
 
-write_surface_data(['Results/',folder,'/conv_data_cd.dat'], r(Uest(:,1)), cdUncert1)
+
+description_data=fileread('description.txt');
+fprintf(fid_description,description_data);
+fclose(fid_description);
+
+
+
+write_surface_data(['Results/',folder,'/conv_data_cd','_CASE',caselbl,'_set',setlbl,'.dat'], r(Uest(:,1)), cdUncert1)
+
 
 if application==1
-    write_surface_data(['Results/',folder,'/conv_surface.dat'], r(Uest(:,1)), sfUncert)
+    write_surface_data(['Results/',folder,'/conv_surface','_CASE',caselbl,'_set',setlbl,'.dat'], r(Uest(:,1)), sfUncert)
 elseif application==2
-    write_surface_data(['Results/',folder,'/conv_surface_cflo.dat'], r(Uest(:,1)), sf_cfloUncert)
-    write_surface_data(['Results/',folder,'/conv_surface_cfup.dat'], r(Uest(:,1)), sf_cfupUncert)
-    write_surface_data(['Results/',folder,'/conv_surface_cplo.dat'], r(Uest(:,1)), sf_cploUncert)
-    write_surface_data(['Results/',folder,'/conv_surface_cpup.dat'], r(Uest(:,1)), sf_cpupUncert)
+    write_surface_data(['Results/',folder,'/conv_surface_cflo','_CASE',caselbl,'_set',setlbl,'.dat'], r(Uest(:,1)), sf_cfloUncert)
+    write_surface_data(['Results/',folder,'/conv_surface_cfup','_CASE',caselbl,'_set',setlbl,'.dat'], r(Uest(:,1)), sf_cfupUncert)
+    write_surface_data(['Results/',folder,'/conv_surface_cplo','_CASE',caselbl,'_set',setlbl,'.dat'], r(Uest(:,1)), sf_cploUncert)
+    write_surface_data(['Results/',folder,'/conv_surface_cpup','_CASE',caselbl,'_set',setlbl,'.dat'], r(Uest(:,1)), sf_cpupUncert)
 
 end
 

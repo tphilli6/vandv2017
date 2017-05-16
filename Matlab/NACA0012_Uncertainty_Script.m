@@ -48,7 +48,7 @@ for nC = 1:numel(Cases)
        
        [~,~,~] = mkdir(['Results/Case',Cases{nC},subCases{nSC}]);
              
-       fid=fopen(['Reliability-Case',Cases{nC},subCases{nSC},'.txt'],'w'); 
+       fid=fopen(['Results/Reliability-Case',Cases{nC},subCases{nSC},'.txt'],'w'); 
        fprintf(fid, ['Summary of Uncertainty Estimate Reliability for NACA 0012 ',CaseNames{nC},', ',subCaseNames{nSC},'\n\n']);
       
        for ns = 1:numel(sets)
@@ -63,7 +63,7 @@ for nC = 1:numel(Cases)
             fprintf('.');
             folder=[folder1,Cases{nC},subCases{nSC},'/set',sets{ns}];
 
-            processSetUncertainty(folder, pf, r, Uest, UestGlobal, fid, 2);
+            processSetUncertainty(folder, pf, r, Uest, UestGlobal, fid, 2,0,[num2str(Cases{nC}),num2str(subCases{nSC})],num2str(sets{ns}));
        
          
             fprintf(fid,'|---------------------------------------------------------------------------------------------------------|\n');
