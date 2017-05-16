@@ -12,5 +12,5 @@ p = orderOfAccuracy(f1, f2, f3, r12, r23);
 
 N=numel(f1);
 dploc = min( abs(pformal-p), 4*pformal );
-dp = min( 1/N* sum(dploc), 0.95*pformal );
+dp = min( 1/N* sum(dploc), 0.75*pformal );
 pstar = pformal - dp;

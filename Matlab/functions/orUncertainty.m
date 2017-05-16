@@ -25,8 +25,9 @@ for i = 1:numel(p)
         
     end
 
-    U = FS*abs(f2-f1)./(r12^p(i) - 1);
+    U(i) = FS*abs(f2(i)-f1(i))./(r12^p(i) - 1);
 
 end
 
-pmean=mean(p); %mean of order of accuracy, includes oscillatory and divergent cases as well
+% pmean=mean(p); %mean of order of accuracy, includes oscillatory and divergent cases as well
+pmean=p;

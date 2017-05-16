@@ -32,8 +32,8 @@ r=[1.000,1.231,1.455,1.6,2.0,2.462,2.909,3.2,4.0,4.923,5.818,6.4,8.0];
 
 % Specifiy which meshes to use to estimate the uncertainty. Size=[Nest x 3]
 % Value is the index corresponding to the appropriate mesh size in r
-Uest=[1,5,9
-      5,9,13
+Uest=[1,3,5
+      5,7,9
       9,11,13];
 
 UestGlobal=[1,3,5

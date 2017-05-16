@@ -28,7 +28,8 @@ else
     
  pbrack=[-100:.25:-4.25,-4:.05:4,4.25:.25:100];%, 10:100];
  for i=1:numel(rat)   
-    ptrans = @(p) log( (r12.^p-1).*rat(i)+r12.^p)./log(r12.*r23) - p;
+%     ptrans = @(p) log( (r12.^p-1).*rat(i)+r12.^p)./log(r12.*r23) - p;
+    ptrans = @(p) log( (r12.^p-1)./(r23.^p-1).*rat(i) )./log(r12) - p;
     pbrack_guess=ptrans(pbrack); 
     pbrack_test = pbrack_guess(1:end-1).*pbrack_guess(2:end); 
     I=find(pbrack_test<=0 & imag(pbrack_test)==0 ); 
@@ -42,6 +43,10 @@ else
     p(i) = fzero(ptrans,pguess,options);
     if isnan(p(i))
         p(i)=0;
+    end
+    %Let the user know if there is a root find error...
+    if abs(ptrans(p(i)))>1e-12
+        fprintf('Transendental equation solve error: p(i)=%12.4e, ptrans(p(i))=%12.4e\n',p(i), ptrans(p(i)));
     end
  end
  p=reshape(p,size(rat));

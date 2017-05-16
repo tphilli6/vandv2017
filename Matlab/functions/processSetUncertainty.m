@@ -12,15 +12,18 @@ for i = 1:numel(r);
     [x,y,u(:,i),v(:,i),nu(:,i)] = importDataSet(['Data/',folder,'/',file]);
 end
 % (skin friction data)
-datacd=flipud(importdata(['Data/',folder,'/conv_data_cd.dat']))'; cd=datacd(2,:);
+datacd=flipud(importdata(['Data/',folder,'/conv_data_cd.dat']))'; 
+
 if application==1 %flat plate
     datasf=flipud(importdata(['Data/',folder,'/conv_surface.dat']))'; sf=datasf(2:end,:);
-
+    cd=datacd(2:end-3,:); % omitting the last 3 columns
+    
 elseif application==2 % NACA 0012
     datacflo=flipud(importdata(['Data/',folder,'/conv_surface_cflo.dat']))'; sf_cflo=datacflo(2:end,:);    
     datacplo=flipud(importdata(['Data/',folder,'/conv_surface_cplo.dat']))'; sf_cplo=datacplo(2:end,:);    
     datacfup=flipud(importdata(['Data/',folder,'/conv_surface_cfup.dat']))'; sf_cfup=datacfup(2:end,:);    
-    datacpup=flipud(importdata(['Data/',folder,'/conv_surface_cpup.dat']))'; sf_cpup=datacpup(2:end,:);    
+    datacpup=flipud(importdata(['Data/',folder,'/conv_surface_cpup.dat']))'; sf_cpup=datacpup(2:end,:);  
+    cd=datacd(2:end-3,:);% omitting the last 3 columns
 end
 
 % Setup description output
@@ -127,7 +130,9 @@ for i = 1:size(Uest,1);
         write_description(fid_description, folder, caselbl, setlbl, '1', f, 'surface_cplo', rstr, pf)
         write_description(fid_description, folder, caselbl, setlbl, '1', f, 'surface_cpup', rstr, pf)
         
-        fprintf(fid,'|   %2.0f    |    %4.2f   |    %4.2f   |    %4.2f   |    %4.2f   |    %4.2f   |    %4.2f   |    %4.2f   |    %4.2f   |\n', r(f(1)), pstarU, pstarV, pstarNu, pstarCD1, pstarSF_cflo, pstarSF_cfup, pstarSF_cplo, pstarSF_cpup );
+        fprintf(fid,'|   %2.0f    |    %4.2f   |    %4.2f   |    %4.2f   |', r(f(1)), pstarU, pstarV, pstarNu);
+        fprintf(fid, '    %4.2f   |',  pstarCD1);
+        fprintf(fid, '    %4.2f   |    %4.2f   |    %4.2f   |    %4.2f   |\n', pstarSF_cflo, pstarSF_cfup, pstarSF_cplo, pstarSF_cpup );
 
     end
     
